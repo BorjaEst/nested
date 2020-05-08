@@ -6,7 +6,7 @@
 -include_lib("eunit/include/eunit.hrl").
 
 -export([is_key/2, get/2, get/3, put/3, update/3, update_with/3]).
--export([remove/2, keys/2]).
+-export([remove/2, keys/2, to_list/1]).
 
 -export_type([key/0, path/0]).
 
@@ -246,6 +246,32 @@ keys_test() ->
     ?assertException(error, {badkey, a }, keys([     a ],    #{b=>1})),
     ?assertException(error, {badkey,'?'}, keys([    '?'], test_map())),
     ?assertException(error, {badkey,'?'}, keys([m0, '?'], test_map())),
+    % Tests conditions when the map input is not a map
+    ?assertException(error, {badmap,x}, keys([], x)).
+
+
+%%--------------------------------------------------------------------
+%% @doc Recursivelly returns a list of pairs representing the 
+%% key-value associations of Map, where the pairs {Kn,Vn} are returned 
+%% in arbitrary order.
+%% The call fails with a {badmap,Map} exception if Map is not a map.
+%% @end
+%%--------------------------------------------------------------------
+-spec to_list(map()) -> [{key(), term()}].
+to_list(  Map) when is_map(Map) -> do_to_list(Map);
+to_list(NoMap)                  -> error({badmap, NoMap}).
+
+do_to_list(Map) when is_map(Map) -> 
+    [{Key,do_to_list(Val)} || {Key,Val} <- maps:to_list(Map)];
+do_to_list(Val) -> 
+    Val.
+
+to_list_test() ->
+    % Tests conditions when the input is a map
+    ?assertEqual(      [], to_list(    #{})),
+    ?assertEqual( [{a,1}], to_list(#{a=>1})),
+    ?assertEqual([{m0,[{m1,[{m2,[]},{v2,v2}]},{v1,v1}]},{v0,v0}], 
+                 to_list(test_map())),
     % Tests conditions when the map input is not a map
     ?assertException(error, {badmap,x}, keys([], x)).
 

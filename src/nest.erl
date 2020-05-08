@@ -2,7 +2,7 @@
 %%% @doc
 %%% @end
 %%%-------------------------------------------------------------------
--module (nested).
+-module (nest).
 -include_lib("eunit/include/eunit.hrl").
 
 -export([is_key/2, get/2, get/3, put/3, update/3, update_with/3]).

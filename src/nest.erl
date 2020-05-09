@@ -41,7 +41,7 @@ is_key_test() ->
     ?assertEqual(false, is_key(     [m0, v1],            #{})),
     ?assertEqual(false, is_key([m0, m1, '?'],     test_map())),
     % Tests conditions when the map input is not a map
-    ?assertException(error, {badmap,x}, get([], x)).
+    ?assertException(error, {badmap,x}, is_key([], x)).
 
 %%--------------------------------------------------------------------
 %% @doc Returns the value at the keys path, if path is not found 
@@ -157,24 +157,19 @@ update_test() ->
 %% @doc Update a value in a Map1 associated with a key path by calling 
 %% Fun on the old value to get a new value. An exception {badkey,Key} 
 %% is generated a Key is not present during the path.
-%% The function should be of arity 2 where the 1st input is the key 
-%% path and the 2nd the actual value.
 %% @end
 %%--------------------------------------------------------------------
 -spec update_with(path(), function(), map()) -> map().
-update_with([K|Kx], F, M) when is_map(M) -> 
-    update_with([K|Kx], F, M, [K|Kx]);
-update_with([], F,     M) when is_map(M) -> F([], M);
+update_with([K|Kx], F, M) when is_map(M) -> fpdt([K|Kx], F, M);
+update_with([], F,     M) when is_map(M) -> F(M);
 update_with( _, _, NoMap)                -> error({badmap, NoMap}).
 
-update_with([K|Kx], F, M, Path) -> 
-    maps:update(K, update_with(Kx, F, maps:get(K, M), Path), M);
-update_with(    [], F, V, Path) -> 
-    F(Path, V).
+fpdt([K|Kx], F, M) -> maps:update(K, fpdt(Kx, F, maps:get(K,M)), M);
+fpdt(    [], F, V) -> F(V).
 
 update_with_test() ->
     % Tests conditions when path matches a value in map
-    Fun = fun(_,_) -> 0 end,
+    Fun = fun(_) -> 0 end,
     ?assertEqual(      0 , update_with(  [], Fun,    #{a=>1})),
     ?assertEqual(#{ a=>0}, update_with( [a], Fun,    #{a=>1})),
     ?assertMatch(#{m0:=0}, update_with([m0], Fun, test_map())),

@@ -68,10 +68,10 @@ replace an exiting value:
 #{two => #{one => target,one_side => 7},two_side => 2}
 ```
 
-instead of a value, you can use update_with a function with arity 2 which is passed the path and the old value:
+instead of a value, you can use update_with a function with the old value as input:
 
 ```erlang
-3> nested:update([two_side], fun(_Path, E) -> E*2 end, Map).
+3> nested:update([two_side], fun(E) -> E*2 end, Map).
 #{two => #{one => target,one_side => 1},two_side => 4}
 ```
 
